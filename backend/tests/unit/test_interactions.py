@@ -24,3 +24,52 @@ def test_filter_returns_interaction_with_matching_ids() -> None:
     result = _filter_by_item_id(interactions, 1)
     assert len(result) == 1
     assert result[0].id == 1
+
+
+def test_filter_excludes_interaction_with_different_learner_id() -> None:
+    interactions = [_make_log(1, 2, 1), _make_log(2, 3, 2)]
+    result = _filter_by_item_id(interactions, 1)
+    assert len(result) == 1
+    assert result[0].item_id == 1
+
+
+def test_filter_returns_multiple_matching_interactions() -> None:
+    """Test that filter returns all interactions matching the item_id."""
+    interactions = [
+        _make_log(1, 10, 5),
+        _make_log(2, 20, 5),
+        _make_log(3, 30, 5),
+        _make_log(4, 40, 99),
+    ]
+    result = _filter_by_item_id(interactions, 5)
+    assert len(result) == 3
+    assert all(i.item_id == 5 for i in result)
+
+
+def test_filter_with_zero_item_id() -> None:
+    """Test boundary case where item_id is 0."""
+    interactions = [_make_log(1, 1, 0), _make_log(2, 2, 1)]
+    result = _filter_by_item_id(interactions, 0)
+    assert len(result) == 1
+    assert result[0].item_id == 0
+
+
+def test_filter_with_nonexistent_item_id() -> None:
+    """Test that filter returns empty list when no interaction matches."""
+    interactions = [_make_log(1, 1, 1), _make_log(2, 2, 2)]
+    result = _filter_by_item_id(interactions, 999)
+    assert result == []
+
+
+def test_filter_preserves_interaction_order() -> None:
+    """Test that filter maintains the original order of interactions."""
+    interactions = [
+        _make_log(5, 50, 10),
+        _make_log(3, 30, 10),
+        _make_log(1, 10, 10),
+    ]
+    result = _filter_by_item_id(interactions, 10)
+    assert len(result) == 3
+    assert result[0].id == 5
+    assert result[1].id == 3
+    assert result[2].id == 1
